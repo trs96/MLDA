@@ -8,9 +8,6 @@ df.index.rename("id", inplace=True)
 df.drop_duplicates(inplace=True)
 
 
-
-
-
 def plot_woman_or_man():
     ax = (
         df["target"][df["sex"] == 0]
