@@ -20,7 +20,7 @@ def vl_question():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
     # Plot the frequency of patients with heart disease
-    plt.subplot(1, 2, 1)
+    plt.subplot(1, 2, 1) # seems this is important to plot both graphs in the same image
     ax1 = df["target"].value_counts().plot.bar(fontsize=14, rot=0, color=["k", "r"])
 
     ax1.set_title(
@@ -30,7 +30,7 @@ def vl_question():
     ax1.set_ylabel("Frequency", fontsize=20)
 
     # Plot the bar chart of the percentage of patient with heart disease
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 2, 2) # seems this is important to plot both graphs in the same image
     ax2 = (
         ((df["target"].value_counts() / len(df)) * 100)
         .sort_index()
