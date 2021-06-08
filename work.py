@@ -7,8 +7,6 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
-
-
 df = pd.read_csv("heart.csv")  # storing the data in df
 df.index.rename("id", inplace=True)
 df.drop_duplicates(inplace=True)  # droping dublicates
@@ -18,15 +16,52 @@ df_hd = df[df["target"] == 1]  # dataframe of Heart diseases
 df_whd = df[df["target"] == 0]  # dataframe of Without Heart diseases
 
 
+def vl_question():
 
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
+    # Plot the frequency of patients with heart disease
+    plt.subplot(1, 2, 1)
+    ax1 = df["target"].value_counts().plot.bar(fontsize=14, rot=0, color=["k", "r"])
+
+    ax1.set_title(
+        "Frequency of healthy patients and patients with heart disease", fontsize=20
+    )
+    ax1.set_xlabel("Target", fontsize=20)
+    ax1.set_ylabel("Frequency", fontsize=20)
+
+    # Plot the bar chart of the percentage of patient with heart disease
+    plt.subplot(1, 2, 2)
+    ax2 = (
+        ((df["target"].value_counts() / len(df)) * 100)
+        .sort_index()
+        .plot.bar(fontsize=14, rot=0, color=["r", "b"])
+    )
+    ax2.set_title("Percentage of healthy patients and patients with heart disease")
+    ax2.set_xlabel("Target", fontsize=20)
+    ax2.set_ylabel("Percentage", fontsize=20)
+
+    # plt.grid()
+    plt.show()
+    print(
+        "Patient without heart disease:{}\nPatient with heart disease:{}".format(
+            round(df["target"].value_counts()[0]), round(df["target"].value_counts()[1])
+        )
+    )
+    print(
+        "\nPatient without heart disease:{}%\nPatient with heart disease:{}%".format(
+            round(df["target"].value_counts(normalize=True)[0], 2) * 100,
+            round(df["target"].value_counts(normalize=True)[1], 2) * 100,
+        )
+    )
+
+
+vl_question()
 
 
 def infos():  # plotting all the data in histograms (maybe change the column names?)
 
     df.hist(bins=50, figsize=(20, 15))
     plt.show()
-
-
 
 
 def des_stat():  # generating descriptive statistics
@@ -54,14 +89,12 @@ def hd_age_plot():
 def data_preprocess():
     # Due to the description of the features, some of them are categorical not numbers
     heart_data = df
-    heart_data['sex'] = heart_data['sex'].astype('object')
-    heart_data['cp'] = heart_data['cp'].astype('object')
-    heart_data['fbs'] = heart_data['fbs'].astype('object')
-    heart_data['restecg'] = heart_data['restecg'].astype('object')
-    heart_data['exang'] = heart_data['exang'].astype('object')
-    heart_data['slope'] = heart_data['slope'].astype('object')
-    heart_data['thal'] = heart_data['thal'].astype('object')
+    heart_data["sex"] = heart_data["sex"].astype("object")
+    heart_data["cp"] = heart_data["cp"].astype("object")
+    heart_data["fbs"] = heart_data["fbs"].astype("object")
+    heart_data["restecg"] = heart_data["restecg"].astype("object")
+    heart_data["exang"] = heart_data["exang"].astype("object")
+    heart_data["slope"] = heart_data["slope"].astype("object")
+    heart_data["thal"] = heart_data["thal"].astype("object")
 
     heart_data = pd.get_dummies(heart_data, drop_first=True)
-
-
