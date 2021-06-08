@@ -1,84 +1,67 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tabulate import tabulate
+import matplotlib.pyplot as pyplot
+import numpy as np
+from sklearn.model_selection import train_test_split
 
 
-df = pd.read_csv("heart.csv")
+
+
+df = pd.read_csv("heart.csv")  # storing the data in df
 df.index.rename("id", inplace=True)
-df.drop_duplicates(inplace=True)
+df.drop_duplicates(inplace=True)  # droping dublicates
+pd.options.display.width = None  # for fully display the columns in PyCharm
+
+df_hd = df[df["target"] == 1]  # dataframe of Heart diseases
+df_whd = df[df["target"] == 0]  # dataframe of Without Heart diseases
 
 
-def plot_woman_or_man():
-    ax = (
-        df["target"][df["sex"] == 0]
-        .value_counts()
-        .sort_index()
-        .plot.bar(figsize=(10, 6), fontsize=14, rot=0, color=["m", "c"])
-    )
 
-    ax.plot()
+
+
+def infos():  # plotting all the data in histograms (maybe change the column names?)
+
+    df.hist(bins=50, figsize=(20, 15))
     plt.show()
 
 
-def infos():
-    full_data = df
-    "Plot of all the data"
-    # full_data.hist(bins=50, figsize=(20,15))
-
-    "Output of all columns"
-    b = full_data.columns
-    # print(b)
-    def corr(csv_data):
-        "Looking for possible correlation patterns in the datasets"
-        corr_matrix = csv_data.corr()
-        a = corr_matrix["target"].sort_values(ascending=False)
-        # print(a)
-
-    "Column 'target' describes if a pacient had a heart disease or not"
-    ax = (
-        full_data[full_data["target"] == 1]["age"]
-        .value_counts()
-        .sort_index()
-        .plot.bar(figsize=(15, 6), fontsize=14, rot=0)
-    )
-    # ax.set_title()
-    # plt.show()
-
-    sns.displot(full_data.age, color="blue")
-
-    for column in full_data:
-        for zahl in full_data[column]:
-            if type(zahl) != int and type(zahl) != float:
-                print("fehler")
 
 
-def plot_some_info():
-    # Plot the frequency of patients with heart disease by the sex
-    ax = (
-        df[df["target"] == 1]["sex"]
-        .value_counts()
-        .sort_index()
-        .plot.bar(figsize=(10, 6), fontsize=14, rot=0, color=["m", "c"])
-    )
-    ax.set_title(
-        "Frequency and Percentage of patient with heart disease by the sex", fontsize=20
-    )
-    ax.set_xlabel("Sex", fontsize=20)
-    ax.set_ylabel("Frequency", fontsize=20)
-    plt.grid()
-    plt.show()
-    ax2 = ax.twinx()
+def des_stat():  # generating descriptive statistics
 
-    # Plot the bar chart of the percentage of patient with heart disease
-    ax2 = (
-        ((df[df["target"] == 1]["sex"].value_counts() / len(df)) * 100)
-        .sort_index()
-        .plot.bar(figsize=(15, 6), fontsize=14, rot=0, color=["m", "c"])
-    )
-    ax2.set_ylabel("Percentage", fontsize=20)
-    plt.grid()
-    plt.show()
+    df_des = df.describe()
+    print(tabulate(df_des, headers="firstrow"))
 
 
-def knn():
-    ada = 1
+def check_none():  # checking if there are any "None" values in the dataset
+
+    df_none = df.isna().sum()
+    print(df_none)
+
+
+def hd_age_plot():
+
+    df = df_hd.append(df_whd)
+    pd.crosstab(df["age"], df["target"]).plot(kind="bar", figsize=(20, 6))
+    pyplot.title("Heart Disease Frequency for Ages")
+    pyplot.xlabel("Age")
+    pyplot.ylabel("Frequency")
+    pyplot.show()
+
+
+def data_preprocess():
+    # Due to the description of the features, some of them are categorical not numbers
+    heart_data = df
+    heart_data['sex'] = heart_data['sex'].astype('object')
+    heart_data['cp'] = heart_data['cp'].astype('object')
+    heart_data['fbs'] = heart_data['fbs'].astype('object')
+    heart_data['restecg'] = heart_data['restecg'].astype('object')
+    heart_data['exang'] = heart_data['exang'].astype('object')
+    heart_data['slope'] = heart_data['slope'].astype('object')
+    heart_data['thal'] = heart_data['thal'].astype('object')
+
+    heart_data = pd.get_dummies(heart_data, drop_first=True)
+
+
