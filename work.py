@@ -15,7 +15,7 @@ pd.options.display.width = None  # for fully display the columns in PyCharm
 df_hd = df[df["target"] == 1]  # dataframe of Heart diseases
 df_whd = df[df["target"] == 0]  # dataframe of Without Heart diseases
 
-
+#fsfs
 def vl_question():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
