@@ -15,7 +15,7 @@ pd.options.display.width = None  # for fully display the columns in PyCharm
 df_hd = df[df["target"] == 1]  # dataframe of Heart diseases
 df_whd = df[df["target"] == 0]  # dataframe of Without Heart diseases
 
-#fsfs
+
 def vl_question():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
@@ -55,8 +55,8 @@ def vl_question():
     )
 
 
-vl_question()
 
+vl_question()
 
 def infos():  # plotting all the data in histograms (maybe change the column names?)
 
@@ -68,6 +68,7 @@ def des_stat():  # generating descriptive statistics
 
     df_des = df.describe()
     print(tabulate(df_des, headers="firstrow"))
+
 
 
 def check_none():  # checking if there are any "None" values in the dataset
@@ -98,3 +99,7 @@ def data_preprocess():
     heart_data["thal"] = heart_data["thal"].astype("object")
 
     heart_data = pd.get_dummies(heart_data, drop_first=True)
+
+
+
+
