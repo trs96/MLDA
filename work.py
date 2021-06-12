@@ -7,10 +7,9 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.covariance import EllipticEnvelope
-
 import plotly.express as px
-
-
+from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans
 
 
 df = pd.read_csv("heart.csv")  # storing the data in df
@@ -257,7 +256,7 @@ def pca_analysis():
     ax.set_title("Explained Variance", fontsize=20)
     plt.legend(loc="center right", fontsize=13)
 
-    #plt.show()
+    # plt.show()
 
     # 5 Component PCA:
 
@@ -268,32 +267,37 @@ def pca_analysis():
     # Displaying 50% of the variance:
     total_var = pca.explained_variance_ratio_.sum() * 100
 
-    labels = {str(i): f'PC {i + 1}' for i in range(5)}
-    labels['color'] = 'condition'
+    labels = {str(i): f"PC {i + 1}" for i in range(5)}
+    labels["color"] = "condition"
 
     fig = px.scatter_matrix(
         pca_samples,
         color=y_eli,
         dimensions=range(6),
         labels=labels,
-        title=f'Total Explained Variance: {total_var:.2f}%',
+        title=f"Total Explained Variance: {total_var:.2f}%",
         opacity=0.8,
         color_continuous_scale=cust_palt,
     )
     fig.update_traces(diagonal_visible=False)
-    #fig.show()
+    # fig.show()
 
-
-    #Displaying 2 components:
+    # Displaying 2 components:
     pca = PCA(3)  # Project from 46 to 3 dimensions.
     matrix_3d = pca.fit_transform(X_cat)
 
     total_var = pca.explained_variance_ratio_.sum() * 100
-    fig = px.scatter_3d(x=matrix_3d[:, 0], y=matrix_3d[:, 1], z=matrix_3d[:, 2], color=y_eli, opacity=0.8,
-                        color_continuous_scale=cust_palt,
-                        title=f'Total Explained Variance: {total_var:.2f}%',
-                        labels={'x': 'Component 1', 'y': 'Component 2', 'z': 'Component 3'})
-    #fig.show()
+    fig = px.scatter_3d(
+        x=matrix_3d[:, 0],
+        y=matrix_3d[:, 1],
+        z=matrix_3d[:, 2],
+        color=y_eli,
+        opacity=0.8,
+        color_continuous_scale=cust_palt,
+        title=f"Total Explained Variance: {total_var:.2f}%",
+        labels={"x": "Component 1", "y": "Component 2", "z": "Component 3"},
+    )
+    # fig.show()
 
     # 2 Component PCA:
 
@@ -304,14 +308,38 @@ def pca_analysis():
 
     total_var = pca.explained_variance_ratio_.sum() * 100
     fig = plt.figure(figsize=(20, 12))
-    ax = sns.scatterplot(matrix_2d[:, 0], matrix_2d[:, 1], palette=cust_palt[:2],
-                         hue=y_eli, alpha=0.9, )
-    ax.set_title(f'Total Explained Variance: {total_var:.2f}%', fontsize=20)
-    plt.xlabel('Component 1')
-    plt.ylabel('Component 2')
+    ax = sns.scatterplot(
+        matrix_2d[:, 0],
+        matrix_2d[:, 1],
+        palette=cust_palt[:2],
+        hue=y_eli,
+        alpha=0.9,
+    )
+    ax.set_title(f"Total Explained Variance: {total_var:.2f}%", fontsize=20)
+    plt.xlabel("Component 1")
+    plt.ylabel("Component 2")
 
-    #plt.show()
+    # plt.show()
 
 
+def kmeans_analysis():
+    data2 = df.loc[:, ["chol", "thalach"]]
 
-pca_analysis()
+    kmeans = KMeans(n_clusters=2)
+    kmeans.fit(data2)
+    labels = kmeans.predict(data2)
+    plt.scatter(df["chol"], df["thalach"], c=labels)
+    plt.xlabel("chol")
+    plt.xlabel("thalach")
+    plt.show()
+
+    # inertia
+    inertia_list = np.empty(14)
+    for i in range(1, 14):
+        kmeans = KMeans(n_clusters=i)
+        kmeans.fit(data2)
+        inertia_list[i] = kmeans.inertia_
+    plt.plot(range(0, 14), inertia_list, "-o")
+    plt.xlabel("Number of cluster")
+    plt.ylabel("Inertia")
+    plt.show()
