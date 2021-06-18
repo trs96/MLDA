@@ -1,16 +1,18 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 from tabulate import tabulate
-import matplotlib.pyplot as pyplot
-import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier  # for the model
+from sklearn.tree import export_graphviz  # plot tree
+from sklearn.model_selection import train_test_split  # for data splitting
 from sklearn.decomposition import PCA
 from sklearn.covariance import EllipticEnvelope
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as pyplot
 import plotly.express as px
-from sklearn.cluster import KMeans
-from sklearn.cluster import KMeans
-
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns  # for plotting
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
 
 df = pd.read_csv("heart.csv")  # storing the data in df
 df.index.rename("id", inplace=True)
@@ -343,3 +345,307 @@ def kmeans_analysis():
     plt.xlabel("Number of cluster")
     plt.ylabel("Inertia")
     plt.show()
+
+
+def random_forest_analysis():  # https://www.kaggle.com/tentotheminus9/what-causes-heart-disease-explaining-the-model#The-Model
+    dt = df
+    X_train, X_test, y_train, y_test = train_test_split(
+        dt.drop("target", 1), dt["target"], test_size=0.2, random_state=10
+    )  # split the data
+
+    model = RandomForestClassifier(
+        max_depth=5
+    )  # here you can change the depth of the model
+    model.fit(X_train, y_train)
+
+    estimator = model.estimators_[1]
+    feature_names = [i for i in X_train.columns]
+
+    y_train_str = y_train.astype("str")
+    y_train_str[y_train_str == "0"] = "no disease"
+    y_train_str[y_train_str == "1"] = "disease"
+    y_train_str = y_train_str.values
+
+    export_graphviz(
+        estimator,
+        out_file="tree.dot",
+        feature_names=feature_names,
+        class_names=y_train_str,
+        rounded=True,
+        proportion=True,
+        label="root",
+        precision=2,
+        filled=True,
+    )
+
+    from subprocess import call
+    from IPython.display import Image
+
+    # call(["dot", "-Tpng", "tree.dot", "-o", "tree.png", "-Gdpi=600"])
+    # Image(filename="tree.png")
+
+    # NEED TO INSTALL GRAPHVIZ FOR USING IT ON PYCHARM
+    # USE: choco install graphviz (in windows terminal)
+    # OR: winget install graphviz (in windows terminal)
+
+    # evaluate the model:
+
+    y_predict = model.predict(X_test)
+    y_pred_quant = model.predict_proba(X_test)[:, 1]
+    y_pred_bin = model.predict(X_test)
+
+    # Assess the fit with a confusion matrix:
+    from sklearn.metrics import confusion_matrix
+
+    confusion_matrix = confusion_matrix(y_test, y_pred_bin)
+    confusion_matrix
+
+    total = sum(sum(confusion_matrix))
+
+    sensitivity = confusion_matrix[0, 0] / (
+        confusion_matrix[0, 0] + confusion_matrix[1, 0]
+    )
+    print("Sensitivity : ", sensitivity)
+
+    specificity = confusion_matrix[1, 1] / (
+        confusion_matrix[1, 1] + confusion_matrix[0, 1]
+    )
+    print("Specificity : ", specificity)
+
+
+def k_nearest_neighbor_analysis():  # https://www.kaggle.com/ahmadjaved097/classifying-heart-disease-patients
+
+    # splitting the data
+    X = df.drop("target", axis=1)
+    y = df["target"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
+
+    # scaling the features
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_train = pd.DataFrame(X_train_scaled)
+
+    X_test_scaled = scaler.transform(X_test)
+    X_test = pd.DataFrame(X_test_scaled)
+
+    # Implementing GridSearchCv to select best parameters and applying k-NN Algorithm
+
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.model_selection import GridSearchCV
+
+    knn = KNeighborsClassifier()
+    params = {
+        "n_neighbors": list(range(1, 20)),
+        "p": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        "leaf_size": list(range(1, 20)),
+        "weights": ["uniform", "distance"],
+    }
+
+    model = GridSearchCV(knn, params, cv=3, n_jobs=-1)
+
+    model.fit(X_train, y_train)
+    print(model.best_params_)
+
+    # Making predictions
+
+    predict = model.predict(X_test)
+
+    # Checking accuracy
+
+    from sklearn.metrics import accuracy_score, confusion_matrix
+
+    print("Accuracy Score: ", accuracy_score(y_test, predict))
+    print(
+        "Using k-NN we get an accuracy score of: ",
+        round(accuracy_score(y_test, predict), 5) * 100,
+        "%",
+    )
+
+    from sklearn.metrics import (
+        recall_score,
+        precision_score,
+        classification_report,
+        roc_auc_score,
+        roc_curve,
+    )
+
+    print(classification_report(y_test, predict))
+
+    # confusion matrix
+
+    class_names = [0, 1]
+    fig, ax = plt.subplots()
+    tick_marks = np.arange(len(class_names))
+    plt.xticks(tick_marks, class_names)
+    plt.yticks(tick_marks, class_names)
+    cnf_matrix = confusion_matrix(y_test, predict)
+
+    # create a heat map
+    sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu", fmt="g")
+    ax.xaxis.set_label_position("top")
+    plt.tight_layout()
+    plt.title("Confusion matrix for k-Nearest Neighbors Model", y=1.1)
+    plt.ylabel("Actual label")
+    plt.xlabel("Predicted label")
+    plt.show()
+
+
+def decisionTree_analysis():  # https://www.kaggle.com/ahmadjaved097/classifying-heart-disease-patients/execution#3.-Decision-Tree
+
+    # splitting the data
+    X = df.drop("target", axis=1)
+    y = df["target"]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42
+    )
+
+    # scaling the features
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler()
+
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_train = pd.DataFrame(X_train_scaled)
+
+    X_test_scaled = scaler.transform(X_test)
+    X_test = pd.DataFrame(X_test_scaled)
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.model_selection import GridSearchCV
+
+    dtree = DecisionTreeClassifier(random_state=7)
+
+    # Setting parameters for GridSearchCV
+    params = {
+        "max_features": ["auto", "sqrt", "log2"],
+        "min_samples_split": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "min_samples_leaf": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    }
+    tree_model = GridSearchCV(dtree, param_grid=params, n_jobs=-1)
+
+    tree_model.fit(X_train, y_train)
+    # Printing best parameters selected through GridSearchCV
+    print(tree_model.best_params_)
+
+    # Making a prediction
+    predict = tree_model.predict(X_test)
+
+    # Accuracy Metrics
+
+    from sklearn.metrics import accuracy_score
+
+    print("Accuracy Score: ", accuracy_score(y_test, predict))
+    print(
+        "Using Decision Tree we get an accuracy score of: ",
+        round(accuracy_score(y_test, predict), 5) * 100,
+        "%",
+    )
+
+    # Classification report
+
+    from sklearn.metrics import classification_report, roc_auc_score, roc_curve
+
+    print(classification_report(y_test, predict))
+
+    class_names = [0, 1]
+    fig, ax = plt.subplots()
+    tick_marks = np.arange(len(class_names))
+    plt.xticks(tick_marks, class_names)
+    plt.yticks(tick_marks, class_names)
+    from sklearn.metrics import accuracy_score, confusion_matrix
+
+    cnf_matrix = confusion_matrix(y_test, predict)
+
+    # create a heat map
+    sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu", fmt="g")
+    ax.xaxis.set_label_position("top")
+    plt.tight_layout()
+    plt.title("Confusion matrix for Decision Tree Model", y=1.1)
+    plt.ylabel("Actual label")
+    plt.xlabel("Predicted label")
+    plt.show()
+
+
+def SVM_analysis():  # https://www.kaggle.com/cdabakoglu/heart-disease-classifications-machine-learning
+    from sklearn.svm import SVC
+
+    y = df.target.values
+    x_data = df.drop(["target"], axis=1)
+    x = (x_data - np.min(x_data)) / (np.max(x_data) - np.min(x_data)).values
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, random_state=0
+    )
+
+    # transpose matrices
+    x_train = x_train.T
+    y_train = y_train.T
+    x_test = x_test.T
+    y_test = y_test.T
+
+    svm = SVC(random_state=1)
+    svm.fit(x_train.T, y_train.T)
+
+    accuracies = {}
+    acc = svm.score(x_test.T, y_test.T) * 100
+    accuracies["SVM"] = acc
+
+    print("Test Accuracy of SVM Algorithm: {:.2f}%".format(acc))
+
+    from sklearn.metrics import confusion_matrix
+
+    y_head_svm = svm.predict(x_test.T)
+    cm_svm = confusion_matrix(y_test, y_head_svm)
+
+    plt.figure(figsize=(10, 10))
+
+    plt.title("Support Vector Machine Confusion Matrix")
+    sns.heatmap(
+        cm_svm, annot=True, cmap="Blues", fmt="d", cbar=False, annot_kws={"size": 24}
+    )
+    plt.show()
+
+
+def logistic_regression_analysis():
+    y = df.target.values
+    x_data = df.drop(["target"], axis=1)
+
+    # Normalize
+    x = (x_data - np.min(x_data)) / (np.max(x_data) - np.min(x_data)).values
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        x, y, test_size=0.2, random_state=0
+    )
+
+    # transpose matrices
+    x_train = x_train.T
+    y_train = y_train.T
+    x_test = x_test.T
+    y_test = y_test.T
+
+    accuracies = {}
+
+    lr = LogisticRegression()
+    lr.fit(x_train.T, y_train.T)
+    acc = lr.score(x_test.T, y_test.T) * 100
+
+    accuracies["Logistic Regression"] = acc
+    print("Test Accuracy {:.2f}%".format(acc))
+
+    y_head_lr = lr.predict(x_test.T)
+    cm_lr = confusion_matrix(y_test, y_head_lr)
+
+    plt.figure(figsize=(10, 10))
+    plt.title("Logistic Regression Confusion Matrix")
+    sns.heatmap(
+        cm_lr, annot=True, cmap="Blues", fmt="d", cbar=False, annot_kws={"size": 24}
+    )
+
+    plt.show()
+
