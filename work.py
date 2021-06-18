@@ -613,6 +613,7 @@ def SVM_analysis():  # https://www.kaggle.com/cdabakoglu/heart-disease-classific
 
 
 def logistic_regression_analysis():
+
     y = df.target.values
     x_data = df.drop(["target"], axis=1)
 
