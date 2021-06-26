@@ -411,7 +411,7 @@ def random_forest_analysis(): # https://www.kaggle.com/tentotheminus9/what-cause
         confusion_matrix[1, 1] + confusion_matrix[0, 1]
     )
     print("Specificity : ", specificity)
-
+random_forest_analysis()
 
 def k_nearest_neighbor_analysis(): # https://www.kaggle.com/ahmadjaved097/classifying-heart-disease-patients
 
@@ -578,7 +578,6 @@ def SVM_analysis(): # https://www.kaggle.com/cdabakoglu/heart-disease-classifica
         x, y, test_size=0.2, random_state=42
     )
 
-
     svm = SVC(random_state=1)
     #svm.fit(x_train.T, y_train.T)
     svm.fit(x_train, y_train)
@@ -604,6 +603,7 @@ def SVM_analysis(): # https://www.kaggle.com/cdabakoglu/heart-disease-classifica
 
 
 
+
 def logistic_regression_analysis():
 
     y = df.target.values
@@ -613,7 +613,7 @@ def logistic_regression_analysis():
     x = (x_data - np.min(x_data)) / (np.max(x_data) - np.min(x_data)).values
 
     x_train, x_test, y_train, y_test = train_test_split(
-        x, y, test_size=0.2, random_state=42
+        x, y, test_size=0.2, random_state=1
     )
 
 
@@ -636,4 +636,8 @@ def logistic_regression_analysis():
     )
 
     plt.show()
+
+
+
+
 
