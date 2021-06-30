@@ -14,6 +14,13 @@ import seaborn as sns  # for plotting
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 
+from tqdm import tqdm # a python package that provides progress bars for iterables
+from operator import itemgetter
+from itertools import combinations
+from sklearn.model_selection import KFold
+import statsmodels
+import statsmodels.api as sm
+
 df = pd.read_csv("heart.csv")  # storing the data in df
 df.index.rename("id", inplace=True)
 df.drop_duplicates(inplace=True)  # droping dublicates
@@ -21,6 +28,48 @@ pd.options.display.width = None  # for fully display the columns in PyCharm
 
 df_hd = df[df["target"] == 1]  # dataframe of Heart diseases
 df_whd = df[df["target"] == 0]  # dataframe of Without Heart diseases
+
+
+def best_subsets(dataframe, predictors, response, max_features):
+    def process_linear_model(features):
+        # Create design maxtrix
+        X = sm.add_constant(dataframe[features])
+        y = dataframe[response]
+
+        # build and fit the linear model and return model and RSS value
+        model = sm.OLS(y, X).fit()
+        RSS = model.ssr
+        return (model, RSS)
+
+    def get_best_kth_model(k):
+        results = []  # list with the results
+
+        # loop over all possible combinations of k features
+        for combo in combinations(predictors, k):
+            # process linear model with this combination of features
+            results.append(process_linear_model(list(combo)))
+
+        # sort the models and return the one with the smallest RSS (the one at index 0 of the sorted results list)
+        return sorted(results, key=itemgetter(1)).pop(0)[0]
+
+    models = []
+
+    # loop over all possibilities for k and create the progress bar, for each k save the best model in the list models
+    # tqdm function here to obtain a nice progress bar
+    for k in tqdm(range(1, max_features + 1)):
+        models.append(get_best_kth_model(k))
+
+    return models
+
+# Define the predictors
+predictors = list(df.columns)
+predictors.remove('target')
+
+# Call our best_subsets function
+models = best_subsets(df, predictors, ['target'], max_features=13)
+print(models[12].params)
+print(type(models))
+
 
 
 def vl_question():
@@ -508,7 +557,7 @@ def decisionTree_analysis():  # https://www.kaggle.com/ahmadjaved097/classifying
 
     X_train_scaled = scaler.fit_transform(X_train)
     X_train = pd.DataFrame(X_train_scaled)
-
+    
     X_test_scaled = scaler.transform(X_test)
     X_test = pd.DataFrame(X_test_scaled)
     from sklearn.tree import DecisionTreeClassifier
