@@ -11,16 +11,18 @@ Dataset available at Kaggle (https://www.kaggle.com/ronitf/heart-disease-uci)
 - 14 attributes 
 
 ## Methodology
-1. Exploring the dataset
-   - Overview over different informations from the data set
-   - Correlation matrix
-2. Data preprocessing
-   - Subset selection methods
-	Best Subset:
-	Forward Stepwise, Validation Model
-   - Pre-process:
-	Scaling, Encoding, Splitting
-3. (Un-)Supervised learning
-   - k-means clustering, Logistic Regression, LDA, QDA, k-Nearest neighbor, Support vector machine, Decision trees, Random forest
-4. Results/Validation
-   - Accuracies of all algorithms, Confusion matrix, ROC Curve, k-Fold Cross Validation
+**1. Exploring the dataset**
+  - Overview over different informations from the data set
+    - Correlation matrix
+    
+**2. Data preprocessing**
+  - Subset selection methods:
+    - Best Subset, Forward Stepwise, Validation Model
+  - Pre-process:
+    - Scaling, Encoding, Splitting
+       
+**3. (Un-)Supervised learning**
+  - k-means clustering, Logistic Regression, LDA, QDA, k-Nearest neighbor, Support vector machine, Decision trees, Random forest
+     
+**4. Results/Validation**
+  - Accuracies of all algorithms, Confusion matrix, ROC Curve, k-Fold Cross Validation
